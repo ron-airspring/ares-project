@@ -227,7 +227,8 @@ enyo.kind({
 				for (p in ps) {
 					this.makeEditor(inControl, p, ps[p], "properties");
 				}
-			} else {
+			}
+			if (this.filterType === 'E') {
 				ps = ps.events;
 				if (ps.length) {
 					this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Events"});
@@ -235,6 +236,9 @@ enyo.kind({
 				for (i=0, p; (p=ps[i]); i++) {
 					this.makeEditor(inControl, p, "", "events");
 				}
+			}
+			if (this.filterType === 'S') {
+				this.$.content.createComponent({name: "style", classes: "onyx-groupbox-header", content: "Style"});
 			}
 		}
 		this.$.content.render();
@@ -364,6 +368,11 @@ enyo.kind({
 	updateFilterType: function(inSender, inEvent) {
 		if (inEvent.active) {
 			this.setFilterType(inEvent.active.value);
+			if (inEvent.active.value === "S") {
+				this.$.filterLevel.hide();				
+			} else {
+				this.$.filterLevel.show();
+			}
 			this.inspect(this.selected);
 		}
 		return true;
@@ -415,9 +424,10 @@ enyo.kind({
 		onValueChanged: ""
 	},
 	components: [
-		{kind: "onyx.RadioGroup", fit:false, onActivate:"doValueChanged", style:"display:block;", controlClasses: "onyx-tabbutton inspector-tabbutton halves", components: [
+		{kind: "onyx.RadioGroup", fit:false, onActivate:"doValueChanged", style:"display:block;", controlClasses: "onyx-tabbutton inspector-tabbutton thirds", components: [
 			{content:"Properties", value: "P", active:true},
-			{content:"Events", value: "E"}
+			{content:"Events", value: "E"},
+			{content:"Style", value: "S"}
 		]}
 	]
 });
