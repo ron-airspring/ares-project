@@ -25,8 +25,17 @@ enyo.kind({
 	debug: false,
 	helper: null,			// Analyzer.KindHelper
 	userDefinedAttributes: {},
+	ccsEditorConfig: [],
 	create: function() {
 		this.inherited(arguments);
+
+		// TODO: hardcoded static css config - will be revisited
+		var tmpCssConfig = {
+			cssStyleName: "Font-Style",
+			properties: new Array("font-size")
+		};
+		this.ccsEditorConfig.push(tmpCssConfig);
+
 		this.helper = new analyzer.Analyzer.KindHelper();
 		
 		//* TODO - should be moved to KindHelper.js.
@@ -238,7 +247,11 @@ enyo.kind({
 				}
 			}
 			if (this.filterType === 'S') {
-				this.$.content.createComponent({name: "style", classes: "onyx-groupbox-header", content: "Style"});
+				// TODO: hardcoded static css config - will be revisited
+				for (i=0, p; (p=this.ccsEditorConfig[i]); i++) {
+					var categoryStyle = this.$.content.createComponent({name: p.name, kind: "CategoryStyle", });
+					categoryStyle.setModel(p);
+				}
 			}
 		}
 		this.$.content.render();
@@ -454,3 +467,49 @@ enyo.kind({
 	}
 });
 
+enyo.kind({
+	name: "CategoryStyle",
+	components: [
+		{classes: "css-category", components: [
+			{ontap:"toggleDrawer", classes: "css-category-name", components: [
+				{name: "indicator", classes: "indicator turned"},
+				{name: "name", tag:"span"}
+			]},
+			{name:"drawer", kind: "onyx.Drawer", open:true, components: [
+				{name: "list", kind: "Repeater", onSetupItem: "setupItem", components: [
+					{name: "styleItem", components: [
+						{kind: "Control", classes: "css-item", components: [
+							{kind: "InheritCheckbox"},
+							{name: "property", style: "width:0%"},
+							{kind: "Inspector.Config.Text"},
+							{content: " px"},
+						]},
+						{kind: "Control", classes: "css-item", components: [						
+							{kind: "onyx.Slider", classes: "deimos-zoom-slider", value: 100, style: "width:80%",
+									onChange: 'zoomInspector', onChanging: 'zoomInspector' }
+						]},
+					]},
+				]}
+			]}
+		]}
+	],
+	cssType: {},
+	toggleDrawer: function() {
+		var open = this.$.drawer.getOpen();
+		this.$.drawer.setOpen(!open);
+		this.$.indicator.addRemoveClass("turned", !open);
+	},
+	setModel: function(inCssStyle) {
+		this.cssType = inCssStyle;
+		this.$.name.setContent(inCssStyle.cssStyleName);	
+		this.$.list.count = inCssStyle.properties.length;
+		this.$.list.build();	
+	},
+	setupItem: function(inSender, inEvent) {
+		inEvent.item.$.property.setContent(this.cssType.properties[inEvent.index]);
+		return true;
+	},
+	zoomInspector: function(inSender, inEvent) {
+		// TODO
+	}	
+});
