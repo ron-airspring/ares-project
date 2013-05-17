@@ -250,7 +250,7 @@ enyo.kind({
 				// TODO: hardcoded static css config - will be revisited
 				for (i=0, p; (p=this.ccsEditorConfig[i]); i++) {
 					var categoryStyle = this.$.content.createComponent({name: p.name, kind: "CategoryStyle", });
-					categoryStyle.setModel(p);
+					categoryStyle.setModel(p, inControl);
 				}
 			}
 		}
@@ -479,9 +479,8 @@ enyo.kind({
 				{name: "list", kind: "Repeater", onSetupItem: "setupItem", components: [
 					{name: "styleItem", components: [
 						{kind: "Control", classes: "css-item", components: [
-							{kind: "InheritCheckbox"},
 							{name: "property", style: "width:0%"},
-							{kind: "Inspector.Config.Text"},
+							{name: "text", kind: "Inspector.Config.Text"},
 							{content: " px"},
 						]},
 						{kind: "Control", classes: "css-item", components: [						
@@ -499,14 +498,22 @@ enyo.kind({
 		this.$.drawer.setOpen(!open);
 		this.$.indicator.addRemoveClass("turned", !open);
 	},
-	setModel: function(inCssStyle) {
+	setModel: function(inCssStyle, inControl) {
 		this.cssType = inCssStyle;
+		this.selected = inControl;
 		this.$.name.setContent(inCssStyle.cssStyleName);	
 		this.$.list.count = inCssStyle.properties.length;
 		this.$.list.build();	
 	},
 	setupItem: function(inSender, inEvent) {
-		inEvent.item.$.property.setContent(this.cssType.properties[inEvent.index]);
+		var prop = this.cssType.properties[inEvent.index];
+		inEvent.item.$.property.setContent(prop);
+		if ((this.selected.style) && (this.selected.style.indexOf(prop) !== 1)) {
+			var str = this.selected.style;
+			var n = str.split(";");
+			var val = str.match(/\d+\.?\d*/g);
+			inEvent.item.$.text.setFieldValue(val);
+		}
 		return true;
 	},
 	zoomInspector: function(inSender, inEvent) {
