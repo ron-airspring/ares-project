@@ -257,8 +257,14 @@ enyo.kind({
 		this.$.content.render();
 	},
 	change: function(inSender, inEvent) {
-		var n = inEvent.target.fieldName;
-		var v = inEvent.target.fieldValue;
+		var n, v;
+		if (this.filterType === "S" && inEvent.target.fieldName === "font-size") {
+			n = "style";
+			v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue +"px";
+		} else {
+			n = inEvent.target.fieldName;
+			v = inEvent.target.fieldValue;			
+		}
 
 		var num = parseFloat(v);
 		if (String(num) == v) {
@@ -480,12 +486,12 @@ enyo.kind({
 					{name: "styleItem", components: [
 						{kind: "Control", classes: "css-item", components: [
 							{name: "property", style: "width:0%"},
-							{name: "text", kind: "Inspector.Config.Text"},
-							{content: " px"},
+							{name: "textEditor", kind: "Inspector.Config.Text"},
+							{name: "unit",content: " "},
 						]},
 						{kind: "Control", classes: "css-item", components: [						
 							{kind: "onyx.Slider", classes: "deimos-zoom-slider", value: 100, style: "width:80%",
-									onChange: 'zoomInspector', onChanging: 'zoomInspector' }
+									onChange: "sliderChanged", onChanging: "sliderChanging"}
 						]},
 					]},
 				]}
@@ -507,16 +513,24 @@ enyo.kind({
 	},
 	setupItem: function(inSender, inEvent) {
 		var prop = this.cssType.properties[inEvent.index];
-		inEvent.item.$.property.setContent(prop);
+		if (prop == "font-size") {
+			inEvent.item.$.unit.setContent("px");
+		}
+		inEvent.item.$.textEditor.setFieldName(prop);
 		if ((this.selected.style) && (this.selected.style.indexOf(prop) !== 1)) {
 			var str = this.selected.style;
 			var n = str.split(";");
-			var val = str.match(/\d+\.?\d*/g);
-			inEvent.item.$.text.setFieldValue(val);
+			if (n.length === 1) {
+				var val = str.match(/\d+\.?\d*/g);
+				inEvent.item.$.textEditor.setFieldValue(val);
+			}
 		}
 		return true;
 	},
-	zoomInspector: function(inSender, inEvent) {
-		// TODO
-	}	
+	sliderChanging: function(inSender, inEvent) {
+		//TODO
+	},
+	sliderChanged: function(inSender, inEvent) {
+		//TODO
+	}
 });
