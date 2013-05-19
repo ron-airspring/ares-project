@@ -515,13 +515,15 @@ enyo.kind({
 		var prop = this.cssType.properties[inEvent.index];
 		inEvent.item.$.textEditor.setFieldName(prop);
 		if ((this.selected.style) && (this.selected.style.indexOf(prop) !== 1)) {
-			var str = this.selected.style;
-			var n = str.split(":");
-			var val = str.match(/\d+\.?\d*/g);
-			for (i=0; i< n.length; i++) {
-				if (n[i].search(val) > -1 ) {
-					inEvent.item.$.textEditor.setFieldValue(n[i]);	
-				}		
+			var str = (this.selected.style).split(";");
+			for (i=0; i < str.length; i++) {
+				if (str[i].indexOf(prop) > -1) {
+					var p = str[i].split(":");
+					for (i=0; i < p.length; i++) {
+						var val = p[i].match(/\d+\.?\d*/g);
+						inEvent.item.$.textEditor.setFieldValue(p[i]);	
+					}
+				}
 			}
 		}
 		return true;
