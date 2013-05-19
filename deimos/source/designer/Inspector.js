@@ -260,7 +260,7 @@ enyo.kind({
 		var n, v;
 		if (this.filterType === "S" && inEvent.target.fieldName === "font-size") {
 			n = "style";
-			v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue +"px";
+			v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue;
 		} else {
 			n = inEvent.target.fieldName;
 			v = inEvent.target.fieldValue;			
@@ -487,7 +487,7 @@ enyo.kind({
 						{kind: "Control", classes: "css-item", components: [
 							{name: "property", style: "width:0%"},
 							{name: "textEditor", kind: "Inspector.Config.Text"},
-							{name: "unit",content: " "},
+							{name: "unit",content: "px or %"},
 						]},
 						{kind: "Control", classes: "css-item", components: [						
 							{kind: "onyx.Slider", classes: "deimos-zoom-slider", value: 100, style: "width:80%",
@@ -513,16 +513,15 @@ enyo.kind({
 	},
 	setupItem: function(inSender, inEvent) {
 		var prop = this.cssType.properties[inEvent.index];
-		if (prop == "font-size") {
-			inEvent.item.$.unit.setContent("px");
-		}
 		inEvent.item.$.textEditor.setFieldName(prop);
 		if ((this.selected.style) && (this.selected.style.indexOf(prop) !== 1)) {
 			var str = this.selected.style;
-			var n = str.split(";");
-			if (n.length === 1) {
-				var val = str.match(/\d+\.?\d*/g);
-				inEvent.item.$.textEditor.setFieldValue(val);
+			var n = str.split(":");
+			var val = str.match(/\d+\.?\d*/g);
+			for (i=0; i< n.length; i++) {
+				if (n[i].search(val) > -1 ) {
+					inEvent.item.$.textEditor.setFieldValue(n[i]);	
+				}		
 			}
 		}
 		return true;
