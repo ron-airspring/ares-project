@@ -260,7 +260,10 @@ enyo.kind({
 		var n, v;
 		if (this.filterType === "S") {
 			n = "style";
-			v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue;
+			if (inEvent.target.fieldValue === null || inEvent.target.fieldValue === "") {
+				v = "";
+			} else 
+				v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue;				
 		} else {
 			n = inEvent.target.fieldName;
 			v = inEvent.target.fieldValue;			
@@ -278,20 +281,24 @@ enyo.kind({
 			this.userDefinedAttributes[this.selected.aresId] = {};
 		}
 
-		if (this.filterType === "S") {
+		if (this.filterType === "S" && v !== "") {
 			var u = this.userDefinedAttributes[this.selected.aresId][n];
-			if (u.search(inEvent.target.fieldName) > -1) {
+			if (u !== undefined && u.search(inEvent.target.fieldName) > -1) {
 				var p= u.split(";");
 				for (i=0; i < p.length; i++) {
 					if (p[i].search(inEvent.target.fieldName) > -1) {
 						this.userDefinedAttributes[this.selected.aresId][n] = u.replace(p[i], v);
 					}
 				}
-			}
+			} else this.userDefinedAttributes[this.selected.aresId][n] = v;
 		} else {
-			this.userDefinedAttributes[this.selected.aresId][n] = v;						
+			if (v === "") {
+				delete this.userDefinedAttributes[this.selected.aresId][n];
+			} else {
+				this.userDefinedAttributes[this.selected.aresId][n] = v;
+			}					
 		}
-		this.doModify({name: n, value: v, type: inEvent.target.fieldType});
+		this.doModify({name: n, value: v, type: inEvent.target.fieldType});			
 	},
 	dblclick: function(inSender, inEvent) {
 		if (inEvent.target.fieldType === "events") {
