@@ -258,7 +258,7 @@ enyo.kind({
 	},
 	change: function(inSender, inEvent) {
 		var n, v;
-		if (this.filterType === "S" && inEvent.target.fieldName === "font-size") {
+		if (this.filterType === "S") {
 			n = "style";
 			v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue;
 		} else {
@@ -277,7 +277,20 @@ enyo.kind({
 		if(!this.userDefinedAttributes[this.selected.aresId]) {
 			this.userDefinedAttributes[this.selected.aresId] = {};
 		}
-		this.userDefinedAttributes[this.selected.aresId][n] = v;
+
+		if (this.filterType === "S") {
+			var u = this.userDefinedAttributes[this.selected.aresId][n];
+			if (u.search(inEvent.target.fieldName) > -1) {
+				var p= u.split(";");
+				for (i=0; i < p.length; i++) {
+					if (p[i].search(inEvent.target.fieldName) > -1) {
+						this.userDefinedAttributes[this.selected.aresId][n] = u.replace(p[i], v);
+					}
+				}
+			}
+		} else {
+			this.userDefinedAttributes[this.selected.aresId][n] = v;						
+		}
 		this.doModify({name: n, value: v, type: inEvent.target.fieldType});
 	},
 	dblclick: function(inSender, inEvent) {
