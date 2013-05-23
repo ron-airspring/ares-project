@@ -543,7 +543,7 @@ enyo.kind({
 						{kind: "Control", classes: "css-item", components: [						
 							{name: "slideBar", kind: "onyx.Slider", classes: "css-value-change-slider", content: "",
 									value: 0, style: "width:90%",
-									onChange: "sliderChanged", onChanging: "sliderChanging"},
+									onChange: "sliderChanging", onChanging: "sliderChanging"},
 						]},
 					]},
 				]}
@@ -583,12 +583,6 @@ enyo.kind({
 		return true;
 	},
 	sliderChanging: function(inSender, inEvent) {
-		var textEditor = inSender.$.ownerProxy.$.textEditor;
-		var slideBar = inSender.$.ownerProxy.$.slideBar;
-		var fieldValUnit = (textEditor.getFieldValue()).replace(/\d+/g, "");
-		textEditor.setFieldValue(Math.round(inEvent.value)+fieldValUnit);
-	},
-	sliderChanged: function(inSender, inEvent) {
-		//TODO
+		// TODO
 	}
 });
