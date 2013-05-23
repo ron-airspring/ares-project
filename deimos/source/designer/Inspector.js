@@ -530,13 +530,14 @@ enyo.kind({
 				{name: "list", kind: "Repeater", onSetupItem: "setupItem", components: [
 					{name: "styleItem", components: [
 						{kind: "Control", classes: "css-item", components: [
-							{name: "property", style: "width:0%"},
+							{name: "property"},
 							{name: "textEditor", kind: "Inspector.Config.Text"},
 							{name: "unit",content: "px or %"},
 						]},
 						{kind: "Control", classes: "css-item", components: [						
-							{kind: "onyx.Slider", classes: "deimos-zoom-slider", value: 100, style: "width:80%",
-									onChange: "sliderChanged", onChanging: "sliderChanging"}
+							{name: "slideBar", kind: "onyx.Slider", classes: "css-value-change-slider", content: "",
+									value: 0, style: "width:90%",
+									onChange: "sliderChanged", onChanging: "sliderChanging"},
 						]},
 					]},
 				]}
@@ -566,7 +567,9 @@ enyo.kind({
 					var p = str[i].split(":");
 					for (i=0; i < p.length; i++) {
 						var val = p[i].match(/\d+\.?\d*/g);
-						inEvent.item.$.textEditor.setFieldValue(p[i]);	
+						inEvent.item.$.textEditor.setFieldValue(p[i] || "");	
+						inEvent.item.$.slideBar.setValue(val);	
+						inEvent.item.$.slideBar.setProgress(val);	
 					}
 				}
 			}
@@ -574,7 +577,10 @@ enyo.kind({
 		return true;
 	},
 	sliderChanging: function(inSender, inEvent) {
-		//TODO
+		var textEditor = inSender.$.ownerProxy.$.textEditor;
+		var slideBar = inSender.$.ownerProxy.$.slideBar;
+		var fieldValUnit = (textEditor.getFieldValue()).replace(/\d+/g, "");
+		textEditor.setFieldValue(Math.round(inEvent.value)+fieldValUnit);
 	},
 	sliderChanged: function(inSender, inEvent) {
 		//TODO
