@@ -30,11 +30,17 @@ enyo.kind({
 		this.inherited(arguments);
 
 		// TODO: hardcoded static css config - will be revisited
+		// will be handle by buildPropList
 		var tmpCssConfig = {
 			cssStyleName: "Font-Style",
 			properties: new Array("font-size")
 		};
 		this.ccsEditorConfig.push(tmpCssConfig);
+		var tmp2CssConfig = {
+			cssStyleName: "Text-Style",
+			properties: new Array("text-indent")
+		};
+		this.ccsEditorConfig.push(tmp2CssConfig);
 
 		this.helper = new analyzer.Analyzer.KindHelper();
 		
@@ -252,9 +258,9 @@ enyo.kind({
 					// TODO: hardcoded static css config - will be revisited
 					// need to be build properties associated to style
 					for (i=0, p; (p=this.ccsEditorConfig[i]); i++) {
-						var categoryStyle = this.$.content.createComponent({name: p.name, kind: "CategoryStyle", });
+						var categoryStyle = this.$.content.createComponent({kind: "CategoryStyle", });
+						// TODO: setModel will be moved to makeEditor
 						categoryStyle.setModel(p, inControl);
-						this.makeEditor(inControl, p, "", "style");
 					}				
 					break;
 				default:
@@ -267,7 +273,7 @@ enyo.kind({
 	change: function(inSender, inEvent) {
 		var n, v = "";
 		if (this.filterType === "S") {
-			// for now implementation done using this.filterType === "S" - will be revisited
+			// for now implementation is using this.filterType === "S" - will be revisited
 			// will come with the css Editor configuration
 			n = "style";
 			if (inEvent.target && inEvent.target.fieldValue && inEvent.target.fieldValue !== "" &&
@@ -319,7 +325,7 @@ enyo.kind({
 						}															
 					}
 			}
-			this.doModify({name: n, value: v, type: this.filterType});
+			this.doModify({name: n, value: this.userDefinedAttributes[this.selected.aresId][n], type: this.filterType});
 		} else {
 			this.userDefinedAttributes[this.selected.aresId][n] = v;
 			this.doModify({name: n, value: v, type: inEvent.target.fieldType});	
