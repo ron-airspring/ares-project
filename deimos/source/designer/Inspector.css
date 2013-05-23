@@ -90,3 +90,9 @@ input.inspector-field-checkbox {
 .turned {
 	background-position-y: -16px;
 }
+
+.css-value-change-slider {
+	width: 100px;
+	margin-right: 10px;
+	margin-left:  10px;
+}
