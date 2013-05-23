@@ -231,27 +231,35 @@ enyo.kind({
 			var kindName = inControl.name + " (" + inControl.kind + ")";
 			this.$.content.createComponent({tag: "h3", content: kindName, classes: "label label-info"});
 			ps = this.buildPropList(inControl);
-			if (this.filterType === 'P') {
-				this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Properties"});
-				for (p in ps) {
-					this.makeEditor(inControl, p, ps[p], "properties");
-				}
-			}
-			if (this.filterType === 'E') {
-				ps = ps.events;
-				if (ps.length) {
-					this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Events"});
-				}
-				for (i=0, p; (p=ps[i]); i++) {
-					this.makeEditor(inControl, p, "", "events");
-				}
-			}
-			if (this.filterType === 'S') {
-				// TODO: hardcoded static css config - will be revisited
-				for (i=0, p; (p=this.ccsEditorConfig[i]); i++) {
-					var categoryStyle = this.$.content.createComponent({name: p.name, kind: "CategoryStyle", });
-					categoryStyle.setModel(p, inControl);
-				}
+
+			switch(this.filterType) {
+				case 'P':
+					this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Properties"});
+					for (p in ps) {
+						this.makeEditor(inControl, p, ps[p], "properties");
+					}				
+					break;
+				case 'E':
+					ps = ps.events;
+					if (ps.length) {
+						this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Events"});
+					}
+					for (i=0, p; (p=ps[i]); i++) {
+						this.makeEditor(inControl, p, "", "events");
+					}				
+					break;
+				case 'S':
+					// TODO: hardcoded static css config - will be revisited
+					// need to be build properties associated to style
+					for (i=0, p; (p=this.ccsEditorConfig[i]); i++) {
+						var categoryStyle = this.$.content.createComponent({name: p.name, kind: "CategoryStyle", });
+						categoryStyle.setModel(p, inControl);
+						this.makeEditor(inControl, p, "", "style");
+					}				
+					break;
+				default:
+					enyo.warn("Inspector has unknown filterType: ", filterType);
+					break;
 			}
 		}
 		this.$.content.render();
