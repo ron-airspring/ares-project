@@ -265,13 +265,15 @@ enyo.kind({
 		this.$.content.render();
 	},
 	change: function(inSender, inEvent) {
-		var n, v;
+		var n, v = "";
 		if (this.filterType === "S") {
+			// for now implementation done using this.filterType === "S" - will be revisited
+			// will come with the css Editor configuration
 			n = "style";
-			if (inEvent.target.fieldValue === null || inEvent.target.fieldValue === "") {
-				v = "";
-			} else 
-				v = inEvent.target.fieldName + ":" + inEvent.target.fieldValue;				
+			if (inEvent.target && inEvent.target.fieldValue && inEvent.target.fieldValue !== "" &&
+				inEvent.target && inEvent.target.fieldName) {
+					v = (inEvent.target.fieldName) + ":" + (inEvent.target.fieldValue) + ";";				
+			}
 		} else {
 			n = inEvent.target.fieldName;
 			v = inEvent.target.fieldValue;			
@@ -289,24 +291,39 @@ enyo.kind({
 			this.userDefinedAttributes[this.selected.aresId] = {};
 		}
 
-		if (this.filterType === "S" && v !== "") {
+		if (this.filterType === "S") {
 			var u = this.userDefinedAttributes[this.selected.aresId][n];
-			if (u !== undefined && u.search(inEvent.target.fieldName) > -1) {
-				var p= u.split(";");
-				for (i=0; i < p.length; i++) {
-					if (p[i].search(inEvent.target.fieldName) > -1) {
-						this.userDefinedAttributes[this.selected.aresId][n] = u.replace(p[i], v);
-					}
-				}
-			} else this.userDefinedAttributes[this.selected.aresId][n] = v;
-		} else {
-			if (v === "") {
-				delete this.userDefinedAttributes[this.selected.aresId][n];
-			} else {
+			var p = (u !== undefined) && (u.split(";"));
+			if (!p) {
+				// no style property defined, add one 
 				this.userDefinedAttributes[this.selected.aresId][n] = v;
-			}					
-		}
-		this.doModify({name: n, value: v, type: inEvent.target.fieldType});			
+			} else {
+					if (p.length <= 2 && 
+						inEvent.target && 
+						p[0].search(inEvent.target.fieldName) > -1 &&
+						(v === "" || v === null)) {
+						// remove the existing css style property
+						delete this.userDefinedAttributes[this.selected.aresId][n];
+					} else {
+						var added = false;
+						// modify the value of the existing css style property list
+						for (i=0; i < p.length; i++) {
+							if (inEvent.target && 
+								p[i].search(inEvent.target.fieldName) > -1) {
+								this.userDefinedAttributes[this.selected.aresId][n] = u.replace(p[i]+";", v);
+								added = true;
+							}
+						}
+						if (!added) {
+							this.userDefinedAttributes[this.selected.aresId][n] = u + v;
+						}															
+					}
+			}
+			this.doModify({name: n, value: v, type: this.filterType});
+		} else {
+			this.userDefinedAttributes[this.selected.aresId][n] = v;
+			this.doModify({name: n, value: v, type: inEvent.target.fieldType});	
+		}		
 	},
 	dblclick: function(inSender, inEvent) {
 		if (inEvent.target.fieldType === "events") {
