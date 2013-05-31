@@ -19,7 +19,8 @@ enyo.kind({
 	],
 	handlers: {
 		onChange: "change",
-		onDblClick: "dblclick"
+		onDblClick: "dblclick",
+		onModif: "cssModify"
 	},
 	style: "padding: 8px; white-space: nowrap;",
 	debug: false,
@@ -226,20 +227,34 @@ enyo.kind({
 			var kindName = inControl.name + " (" + inControl.kind + ")";
 			this.$.content.createComponent({tag: "h3", content: kindName, classes: "label label-info"});
 			ps = this.buildPropList(inControl);
-			if (this.filterType === 'P') {
-				this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Properties"});
-				for (p in ps) {
-					this.makeEditor(inControl, p, ps[p], "properties");
-				}
-			} else {
-				ps = ps.events;
-				if (ps.length) {
-					this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Events"});
-				}
-				for (i=0, p; (p=ps[i]); i++) {
-					this.makeEditor(inControl, p, "", "events");
-				}
+			switch(this.filterType) {
+				case 'P':
+					this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Properties"});
+					for (p in ps) {
+						this.makeEditor(inControl, p, ps[p], "properties");
+					}
+					break;
+				case 'E':
+					ps = ps.events;
+					if (ps.length) {
+				        this.$.content.createComponent({classes: "onyx-groupbox-header", content: "Events"});
+					}
+					for (i=0, p; (p=ps[i]); i++) {
+				        this.makeEditor(inControl, p, "", "events");
+					}
+					break;
+				case 'S':
+					var style = "";
+					if (inControl && inControl.style !== undefined) {
+						style = inControl.style;
+					}
+					this.$.content.createComponent({kind: "CssEditor", currentControlStyle: style});
+					break;
+				default:
+					enyo.warn("Inspector has unknown filterType: ", filterType);
+					break;
 			}
+
 		}
 		this.$.content.render();
 	},
@@ -259,10 +274,49 @@ enyo.kind({
 		if(!this.userDefinedAttributes[this.selected.aresId]) {
 			this.userDefinedAttributes[this.selected.aresId] = {};
 		}
-		this.userDefinedAttributes[this.selected.aresId][n] = v;
+
+		var u = this.userDefinedAttributes[this.selected.aresId][n];
+		if (u !== undefined && u.indexOf(v) === -1) {
+			this.userDefinedAttributes[this.selected.aresId][n] = v;
+		}
 		this.doModify({name: n, value: v, type: inEvent.target.fieldType});
 	},
 	//* @protected
+	cssModify: function(inSender, inEvent) {
+		var n = "style";
+			
+			if (inEvent.value !== "" &&
+				inEvent.name) {
+					v = (inEvent.name) + ":" + (inEvent.value) + ";";				
+			} else v = "";
+
+			var u = this.userDefinedAttributes[this.selected.aresId][n];
+			var p = (u !== undefined) && (u.split(";"));
+			if (!p) {
+				// no style property defined, add one 
+				this.userDefinedAttributes[this.selected.aresId][n] = v;
+			} else {
+					if (p.length <= 2 && 
+						p[0].search(inEvent.name) > -1 &&
+						(v === "" || v === null)) {
+						// remove the existing css style property
+						delete this.userDefinedAttributes[this.selected.aresId][n];
+					} else {
+						var added = false;
+						// modify the value of the existing css style property list
+						for (i=0; i < p.length; i++) {
+							if (p[i].search(inEvent.name) > -1) {
+								this.userDefinedAttributes[this.selected.aresId][n] = u.replace(p[i]+";", v);
+								added = true;
+							}
+						}
+						if (!added) {
+							this.userDefinedAttributes[this.selected.aresId][n] = u + v;
+						}															
+					}
+			}
+		this.doModify({name: n, value: this.userDefinedAttributes[this.selected.aresId][n], type: "S"});
+	},
 	dblclick: function(inSender, inEvent) {
 		if (inEvent.target.fieldType === "events") {
 			var n = inEvent.target.fieldName;
@@ -375,6 +429,11 @@ enyo.kind({
 	updateFilterType: function(inSender, inEvent) {
 		if (inEvent.active) {
 			this.setFilterType(inEvent.active.value);
+			if (inEvent.active.value === "S") {
+				this.$.filterLevel.hide();				
+			} else {
+				this.$.filterLevel.show();
+			}
 			this.inspect(this.selected);
 		}
 		return true;
@@ -435,9 +494,10 @@ enyo.kind({
 		onValueChanged: ""
 	},
 	components: [
-		{kind: "onyx.RadioGroup", fit:false, onActivate:"doValueChanged", style:"display:block;", controlClasses: "onyx-tabbutton inspector-tabbutton halves", components: [
+		{kind: "onyx.RadioGroup", fit:false, onActivate:"doValueChanged", style:"display:block;", controlClasses: "onyx-tabbutton inspector-tabbutton thirds", components: [
 			{content:"Properties", value: "P", active:true},
-			{content:"Events", value: "E"}
+			{content:"Events", value: "E"},
+			{content:"Style", value: "S"}
 		]}
 	]
 });
